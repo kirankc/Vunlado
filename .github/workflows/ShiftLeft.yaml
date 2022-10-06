@@ -13,7 +13,7 @@ jobs:
     env:
       APP_ID: e9247ff3b9a3b2c27dcd33d51fe60ce3da979f36a9c0a3d253365000d714d903
       BRANCH_NAME: main
-      SCAN_ID: 3d1d59402dc75413d5566bfa5ed80f6118ef415de3f89c1641dbd8468f6cefc5
+      SCAN_ID: 3fa8b291b7fd3093e42808d5f0ccbab0edd49e3e971ba291d301ca0293772934
       REQ_URL_MAP: "${{toJSON('{\"SL_RESULT_API_HOST\":\"https://slresultapi.qa.securin.io/resultapi\"\
         ,\"SL_RESULTPARSER_API_HOST\":\"https://slresultparserapi.qa.securin.io/resultparserapi\"\
         }')}}"
@@ -24,8 +24,6 @@ jobs:
         \  --header 'Authorization: Bearer ${{secrets.CLI_ACCESS_TOKEN}}'  --data-raw\
         \ ' ' )\necho \"::set-output name=authTokenJson::$respJson\""
     - uses: actions/checkout@v2
-    - name: Build with Maven
-      run: mvn -q --batch-mode --update-snapshots verify
     - name: Scan Initiated
       id: sec_scan_init
       run: "usrVal=$(echo '${{fromJson(steps.auth_token.outputs.authTokenJson).user}}'\
@@ -41,8 +39,8 @@ jobs:
         \ --volume ${{github.workspace}}:/workdir -v /var/run/docker.sock:/var/run/docker.sock\
         \ $usrImgTag -access_tkn ${{secrets.CLI_ACCESS_TOKEN}} -app_id ${{ env.APP_ID\
         \ }} -scan_id ${{ env.SCAN_ID }} -branch_name ${{ env.BRANCH_NAME }} -req_url_map\
-        \ ${{ env.REQ_URL_MAP }} event:${{ github.event_name }}  pr_number:${{ github.event.number\
-        \ }}"
+        \ ${{ env.REQ_URL_MAP }} -tool_name github event:${{ github.event_name }}\
+        \  pr_number:${{ github.event.number }}"
     - name: Upload SARIF file
       uses: github/codeql-action/upload-sarif@v1
       with:
